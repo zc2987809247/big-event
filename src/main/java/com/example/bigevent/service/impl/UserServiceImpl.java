@@ -25,4 +25,9 @@ public class UserServiceImpl implements UserService {
 
         userMapper.add(username,md5String);
     }
+
+    @Override
+    public void update(User user) {
+        userMapper.update(user);
+    }
 }

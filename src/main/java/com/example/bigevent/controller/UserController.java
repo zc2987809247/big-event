@@ -1,16 +1,16 @@
 package com.example.bigevent.controller;
 
+import com.example.bigevent.mapper.UserMapper;
 import com.example.bigevent.pojo.Result;
 import com.example.bigevent.pojo.User;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.JwtUtil;
 import com.example.bigevent.utils.Md5Util;
+import com.example.bigevent.utils.ThreadLocalUtil;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Result register(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$")String password) {
+    public Result<String> register(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$")String password) {
         //查询用户
         User user = userService.findByUserName(username);
         if (user == null) {
@@ -36,7 +36,7 @@ public class UserController {
 
     }
     @PostMapping("/login")
-    public Result login(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$")String password) {
+    public Result<String> login(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$")String password) {
         //查询用户
         User user = userService.findByUserName(username);
         if(user == null) {
@@ -51,5 +51,18 @@ public class UserController {
             }
         }
         return Result.error("密码错误");
+    }
+    @GetMapping("/userInfo")
+    public Result<User> userInfo() {
+        Map<String,Object> claims = ThreadLocalUtil.get();
+        String username = (String) claims.get("username");
+        User user = userService.findByUserName(username);
+        return Result.success(user);
+    }
+
+    @PutMapping("/update")
+    public Result update(@RequestBody @Validated User user) {
+        userService.update(user);
+        return Result.success();
     }
 }
